@@ -44,6 +44,7 @@ public class MSA extends MOF_DUE {
 			
 			double lambda = 1.0 / (i + 2);
 			
+			long dueTick = System.currentTimeMillis();
 			for (int n = 0; n < mfs.intersections; n++) {
 				MixtureOutgoingFractions.Intersection mof = mfs.get(n);
 				mof.start();
@@ -61,13 +62,19 @@ public class MSA extends MOF_DUE {
 						}
 				mof.compress();
 			}
+			long dueTock = System.currentTimeMillis();
 			
+			long dnlTick = System.currentTimeMillis();
 			dnl.loadNetwork();
+			long dnlTock = System.currentTimeMillis();
 			
 			for (int j = 0; j < network.links.length; j++)
 				travelTimes[j] = DynamicUtils.computeTravelTime(network.links[j], stepSize);
 			
+			long tdspTick = System.currentTimeMillis();
 			pair = tdsp.shortestPaths(mfs, travelTimes);
+			long tdspTock = System.currentTimeMillis();
+			
 			costs = pair.first();
 			shortestOugoingLinks = pair.second();
 			
@@ -76,6 +83,9 @@ public class MSA extends MOF_DUE {
 			System.out.println("[DUE] SPTT: " + criterions[1]);
 			System.out.println("[DUE] AEC:  " + criterions[2]);
 			System.out.println("[DUE] RG:   " + criterions[3]);
+			System.out.println("DUE took:  " + (dueTock - dueTick) / 1000 + "s");
+			System.out.println("DNL took:  " + (dnlTock - dnlTick) / 1000 + "s");
+			System.out.println("TDSP took: " + (tdspTock - tdspTick) / 1000 + "s");
 		}
 		
 //		dnl.checkDestinationInflows(false);

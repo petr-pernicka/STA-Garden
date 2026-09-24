@@ -64,7 +64,7 @@ public class DynamicNetwork {
 			Network.Edge link = network.getEdges()[i];
 			
 			// practical capacity used in STA is about 0.8 of actual capacity
-			double freeFlowTime = Math.max(link.freeFlow, 0.1);
+			double freeFlowTime = Math.max(link.freeFlow / 2, 0.1);
 			double length = Math.max(link.length, 0.1);
 			double capacity = 1.25 * link.capacity;
 			double freeFlowSpeed = length / freeFlowTime;

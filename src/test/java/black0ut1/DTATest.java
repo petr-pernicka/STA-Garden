@@ -6,9 +6,8 @@ import black0ut1.dynamic.Convergence;
 import black0ut1.dynamic.DynamicNetwork;
 import black0ut1.dynamic.TimeDependentODM;
 import black0ut1.dynamic.equilibrium.*;
+import black0ut1.dynamic.loading.dnl.BasicDNL;
 import black0ut1.dynamic.loading.dnl.DynamicNetworkLoading;
-import black0ut1.dynamic.loading.dnl.ILTM_DNL;
-import black0ut1.dynamic.tdsp.CDOT;
 import black0ut1.dynamic.tdsp.DOT;
 import black0ut1.io.TNTP;
 import black0ut1.util.Util;
@@ -19,14 +18,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
-@Disabled
+//@Disabled
 public class DTATest {
 	
 	static Stream<Arguments> provideConfigurations() {
 		// Network, step size, odm steps, time steps, msa steps
 		return Stream.of(
-				Arguments.of("SiouxFalls", 1, 30, 300, 100, 10)
-				/*Arguments.of("ChicagoSketch", 0.5, 30, 350, 20, 2)*/);
+				/*Arguments.of("SiouxFalls", 1, 30, 300, 100, 10)*/
+				Arguments.of("ChicagoSketch", 0.1, 30, 1000, 10, 1));
 	}
 	
 	@ParameterizedTest
@@ -45,8 +44,8 @@ public class DTATest {
 		DynamicNetwork dynamicNetwork = DynamicNetwork.fromStaticNetwork(network, tdodm, stepSize, timeSteps);
 		
 		StaticRouteChoice routeChoice = new StaticAONRouteChoice(network, dynamicNetwork, timeSteps);
-		DynamicNetworkLoading dnl = new ILTM_DNL(dynamicNetwork, tdodm, stepSize, timeSteps, 1e-8);
-		DOT tdsp = new CDOT(dynamicNetwork, stepSize, timeSteps, false);
+		DynamicNetworkLoading dnl = new BasicDNL(dynamicNetwork, tdodm, stepSize, timeSteps);
+		DOT tdsp = new DOT(dynamicNetwork, stepSize, timeSteps, true);
 		
 		Convergence convergence = new Convergence(dynamicNetwork, tdodm, stepSize, null);
 		
