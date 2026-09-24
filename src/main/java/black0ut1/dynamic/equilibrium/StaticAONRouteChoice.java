@@ -1,9 +1,7 @@
 package black0ut1.dynamic.equilibrium;
 
-import black0ut1.data.DoubleMatrix;
 import black0ut1.data.network.Network;
 import black0ut1.dynamic.DynamicNetwork;
-import black0ut1.dynamic.loading.link.Connector;
 import black0ut1.dynamic.loading.routing.MixtureOutgoingFractions;
 import black0ut1.dynamic.loading.node.Intersection;
 import black0ut1.util.SSSP;
@@ -12,12 +10,10 @@ public class StaticAONRouteChoice implements StaticRouteChoice {
 	
 	protected final Network network;
 	protected final DynamicNetwork dNetwork;
-	protected final DoubleMatrix odMatrix;
 	protected final int timeSteps;
 	
-	public StaticAONRouteChoice(Network network, DynamicNetwork dNetwork, DoubleMatrix odMatrix, int timeSteps) {
+	public StaticAONRouteChoice(Network network, DynamicNetwork dNetwork, int timeSteps) {
 		this.network = network;
-		this.odMatrix = odMatrix;
 		this.dNetwork = dNetwork;
 		this.timeSteps = timeSteps;
 	}
@@ -25,16 +21,22 @@ public class StaticAONRouteChoice implements StaticRouteChoice {
 	public MixtureOutgoingFractions computeInitialMixtureFractions() {
 		MixtureOutgoingFractions result = new MixtureOutgoingFractions(dNetwork, timeSteps);
 		
-		double[][] destinationFlows = assignFlows();
+		double[] costs = new double[network.edges];
+		for (int i = 0; i < network.edges; i++)
+			costs[i] = network.getEdges()[i].freeFlow;
+		
+		Network.Edge[][] successorTrees = new Network.Edge[network.zones][];
+		for (int d = 0; d < network.zones; d++)
+			successorTrees[d] = SSSP.dijkstraDest(network, d, costs).first();
 		
 		// create first mixture fraction for each node
 		for (int node = 0; node < network.nodes; node++)
-			createNodeFractions(result.get(node), destinationFlows, node);
+			createNodeFractions(result.get(node), successorTrees, node);
 		
 		return result;
 	}
 	
-	protected void createNodeFractions(MixtureOutgoingFractions.Intersection mof, double[][] destinationFlows, int node1) {
+	protected void createNodeFractions(MixtureOutgoingFractions.Intersection mof, Network.Edge[][] successorTrees, int node1) {
 		mof.start();
 		
 		Intersection node = dNetwork.routedIntersections[node1];
@@ -42,86 +44,26 @@ public class StaticAONRouteChoice implements StaticRouteChoice {
 		// compute fractions for a destination
 		for (int destination = 0; destination < network.zones; destination++) {
 			
-			// the amount of flow going through the node
-			double nodeFlow = 0;
-			
-			// the next link in tree (the only link with outgoing flow)
 			int J = -1;
-			
 			if (node1 == destination) {
-				
-				// if node is the destination, next link is the
-				// destination connector (which is first outgoing)
 				J = 0;
-				for (int i = 1; i < node.incomingLinks.length; i++) {
-					int index = node.incomingLinks[i].index;
-					nodeFlow += destinationFlows[destination][index];
-				}
-				
 			} else {
-				
 				for (int j = 0; j < node.outgoingLinks.length; j++) {
 					if (node1 < network.zones && j == 0)
 						continue; // skip destination connector
 					
 					int index = node.outgoingLinks[j].index;
-					if (destinationFlows[destination][index] > 0) {
+					if (successorTrees[destination][node1].index == index) {
 						J = j;
-						nodeFlow = destinationFlows[destination][index];
 						break;
 					}
 				}
 			}
 			
-			// Destination flow do not use this intersection -> fractions will be
-			// uniformly distributed among non-connector links
-			if (nodeFlow == 0) {
-				int numLinks = (node.outgoingLinks[0] instanceof Connector)
-						? node.outgoingLinks.length - 1
-						: node.outgoingLinks.length;
-				
-				double fraction = 1.0 / numLinks;
-				for (int j = 0; j < node.outgoingLinks.length; j++) {
-					if (node.outgoingLinks[j] instanceof Connector)
-						continue;
-					
-					for (int t = 0; t < timeSteps; t++)
-						mof.setFraction(t, destination, j, fraction);
-				}
-				
-			} // all flow from each incoming link is going into J
-			else {
-				for (int t = 0; t < timeSteps; t++)
-					mof.setFraction(t, destination, J, 1);
-			}
+			for (int t = 0; t < timeSteps; t++)
+				mof.setFraction(t, destination, J, 1);
 		}
 		
 		mof.compress();
-	}
-	
-	protected double[][] assignFlows() {
-		double[][] destinationFlows = new double[network.zones][network.edges];
-		
-		double[] costs = new double[network.edges];
-		for (int i = 0; i < network.edges; i++)
-			costs[i] = network.getEdges()[i].freeFlow;
-		
-		for (int destination = 0; destination < network.zones; destination++) {
-			Network.Edge[] next = SSSP.dijkstraDest(network, destination, costs).first();
-			
-			for (int origin = 0; origin < network.zones; origin++) {
-				double demand = odMatrix.get(origin, destination);
-				if (demand == 0)
-					continue;
-				
-				for (Network.Edge link = next[origin];
-					 link != null;
-					 link = next[link.head]) {
-					destinationFlows[destination][link.index] += demand;
-				}
-			}
-		}
-		
-		return destinationFlows;
 	}
 }

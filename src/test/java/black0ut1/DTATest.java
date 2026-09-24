@@ -44,7 +44,7 @@ public class DTATest {
 				.scale(odmScale);
 		DynamicNetwork dynamicNetwork = DynamicNetwork.fromStaticNetwork(network, tdodm, stepSize, timeSteps);
 		
-		StaticRouteChoice routeChoice = new StaticAONRouteChoice(network, dynamicNetwork, odm, timeSteps);
+		StaticRouteChoice routeChoice = new StaticAONRouteChoice(network, dynamicNetwork, timeSteps);
 		DynamicNetworkLoading dnl = new ILTM_DNL(dynamicNetwork, tdodm, stepSize, timeSteps, 1e-8);
 		DOT tdsp = new CDOT(dynamicNetwork, stepSize, timeSteps, false);
 		
