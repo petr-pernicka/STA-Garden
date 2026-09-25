@@ -12,8 +12,6 @@ import black0ut1.dynamic.loading.routing.MixtureOutgoingFractions;
  * shortest paths algorithm for all departure times. It works with discrete model time and
  * discrete travel time. That is, travel times must be multiples of step size.
  * <p>
- * This algorithm is capable of dealing with travel times computed from DNL which violates
- * the CFL condition (ILTM DNLs), although innacurately. See {@link #computeCost}.
  * Bibliography:																		  <br>
  * - (Chabini, 1997) A New Algorithm for Shortest Paths in Discrete Dynamic Networks	  <br>
  * - (Chabini, 1998) Discrete Dynamic Shortest Path Problems in Transportation
@@ -104,7 +102,9 @@ public class DOT {
 	 * @return The cost/time of the shortest path.
 	 */
 	public double computeCost(int t, int d, Link link, double[][] travelTimes, MixtureOutgoingFractions.Costs costs) {
-		int m = link.head.index;
+		double travelTime = travelTimes[link.index][t + 1];
+		if (travelTimes[link.index][t + 1] == Double.POSITIVE_INFINITY)
+			return Double.POSITIVE_INFINITY;
 		
 		// Normalized travel time travelTimes[link.index][t + 1] / stepSize must be larger
 		// >= 1 (the CFL condition is not violated). Because we round here, it actually
@@ -115,21 +115,21 @@ public class DOT {
 		// costs.getCost(m, t + travelTimeNormalized, d) from the initialization.
 		// The resolution is to round up values in (0, 0.5) which deals with the
 		// infinities, but is inaccurate.
-		long travelTimeNormalized1 = Math.round(travelTimes[link.index][t + 1] / stepSize);
-		if (travelTimeNormalized1 == 0)
-			travelTimeNormalized1 = 1;
+		double normalizedTravelTime = travelTime / stepSize;
+		if (normalizedTravelTime < 1) {
+			throw new RuntimeException("CFL condition violated in DOT algorithm." +
+					" Normalized travel time value: " + normalizedTravelTime);
+		}
 		
-		// If travelTimes[link.index][t + 1] is infinity, travelTimeNormalized1 is
-		// Long.MAX_VALUE and that converted to int is -1 -> negative cost.
-		int travelTimeNormalized = (int) Math.min(travelTimeNormalized1, Integer.MAX_VALUE);
-		double travelTime = stepSize * travelTimeNormalized;
+		int normalizedTravelTimeRounded = (int) Math.round(normalizedTravelTime);
 		
-		if ((long) t + travelTimeNormalized > timeSteps - 1) {
+		int m = link.head.index;
+		if (t + normalizedTravelTimeRounded > timeSteps - 1) {
 			// Here, we use the the assumption that conditions are stationary after
 			// the modelled period.
 			return travelTime + costs.getCost(m, timeSteps - 1, d);
 		} else {
-			return travelTime + costs.getCost(m, t + travelTimeNormalized, d);
+			return travelTime + costs.getCost(m, t + normalizedTravelTimeRounded, d);
 		}
 	}
 	
