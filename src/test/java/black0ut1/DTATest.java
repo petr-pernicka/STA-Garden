@@ -48,7 +48,7 @@ public class DTATest {
 		DynamicNetworkLoading dnl = new ILTM_DNL(dynamicNetwork, tdodm, stepSize, timeSteps, 1e-8);
 		DOT tdsp = new CDOT(dynamicNetwork, stepSize, timeSteps, false);
 		
-		Convergence convergence = new Convergence(dynamicNetwork, tdodm, stepSize, null);
+		Convergence convergence = new Convergence(dynamicNetwork, tdodm, stepSize, timeSteps, null);
 		
 		MOF_DUE msa = new MSA(dynamicNetwork, tdodm, routeChoice, dnl, tdsp, msaSteps, stepSize, convergence);
 		long tick = System.currentTimeMillis();

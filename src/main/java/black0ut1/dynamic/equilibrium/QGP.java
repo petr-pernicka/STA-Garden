@@ -39,7 +39,7 @@ public class QGP extends RGP {
 		MixtureOutgoingFractions.Costs costs = pair.first();
 		MixtureOutgoingFractions.Indices shortestOugoingLinks = pair.second();
 		
-		double[] criterions = convergence.computeAll(costs);
+		double[] criterions = convergence.computeAll(shortestOugoingLinks);
 		System.out.println("[DUE] TSTT: " + criterions[0]);
 		System.out.println("[DUE] SPTT: " + criterions[1]);
 		System.out.println("[DUE] AEC:  " + criterions[2]);
@@ -138,7 +138,7 @@ public class QGP extends RGP {
 			costs = pair.first();
 			shortestOugoingLinks = pair.second();
 			
-			double[] newCriterions = convergence.computeAll(costs);
+			double[] newCriterions = convergence.computeAll(shortestOugoingLinks);
 			System.out.println("[DUE] TSTT: " + newCriterions[0]);
 			System.out.println("[DUE] SPTT: " + newCriterions[1]);
 			System.out.println("[DUE] AEC:  " + newCriterions[2]);

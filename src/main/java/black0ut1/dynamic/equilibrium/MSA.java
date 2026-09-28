@@ -32,7 +32,7 @@ public class MSA extends MOF_DUE {
 		MixtureOutgoingFractions.Costs costs = pair.first();
 		MixtureOutgoingFractions.Indices shortestOugoingLinks = pair.second();
 		
-		double[] criterions = convergence.computeAll(costs);
+		double[] criterions = convergence.computeAll(shortestOugoingLinks);
 		System.out.println("[DUE] TSTT: " + criterions[0]);
 		System.out.println("[DUE] SPTT: " + criterions[1]);
 		System.out.println("[DUE] AEC:  " + criterions[2]);
@@ -71,7 +71,7 @@ public class MSA extends MOF_DUE {
 			costs = pair.first();
 			shortestOugoingLinks = pair.second();
 			
-			criterions = convergence.computeAll(costs);
+			criterions = convergence.computeAll(shortestOugoingLinks);
 			System.out.println("[DUE] TSTT: " + criterions[0]);
 			System.out.println("[DUE] SPTT: " + criterions[1]);
 			System.out.println("[DUE] AEC:  " + criterions[2]);

@@ -93,7 +93,7 @@ public class StepSizeSiouxFallsTest {
 		XYSeries series = new XYSeries(stepSize);
 		dataset.addSeries(series);
 		AtomicInteger i = new AtomicInteger();
-		Convergence convergence = new Convergence(dynamicNetwork, tdodm, stepSize,
+		Convergence convergence = new Convergence(dynamicNetwork, tdodm, stepSize, timeSteps,
 				doubles -> series.add(i.getAndIncrement(), doubles[2])
 		);
 		
