@@ -56,16 +56,18 @@ public class MixtureOutgoingFractions {
 		}
 		
 		public double getFraction(int t, int d, int j) {
-			int index = -1;
-			for (int i = offsets[d + 1] - 1; i >= offsets[d]; i--) // TODO optionally use binary search
-				if (indices[i] <= t) {
-					index = values[i];
-					break;
-				}
+			int i = offsets[d];
+			int last = offsets[d + 1] - 1;
 			
-			if (index >= 0) {
+			// indices[offsets[d]] == 0 <= t, so the first period always qualifies.
+			// Advance while the next period has already started.
+			while (i < last && indices[i + 1] <= t)
+				i++;
+			
+			int index = values[i];
+			if (index >= 0)
 				return index == j ? 1 : 0;
-			} else {
+			else {
 				int poolIndex = -(index + 1);
 				return uniqueVectors[poolIndex * J + j];
 			}
@@ -189,18 +191,16 @@ public class MixtureOutgoingFractions {
 		
 		protected final double[] values = new double[intersections * destinations * timeSteps];
 		
-		public Costs() {}
-		
 		public Costs(double value) {
 			Arrays.fill(values, value);
 		}
 		
 		public double getCost(int n, int t, int d) {
-			return values[n * timeSteps * destinations + t * destinations + d];
+			return values[d * timeSteps * intersections + t * intersections + n];
 		}
 		
 		public void setCost(int n, int t, int d, double cost) {
-			values[n * timeSteps * destinations + t * destinations + d] = cost;
+			values[d * timeSteps * intersections + t * intersections + n] = cost;
 		}
 	}
 }
