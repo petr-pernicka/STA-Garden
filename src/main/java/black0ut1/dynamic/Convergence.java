@@ -91,7 +91,7 @@ public class  Convergence {
 					: indices.getIndex(tail, (int) time, destination);
 			Link link = network.routedIntersections[tail].outgoingLinks[j];
 			
-			double linkTravelTime = DynamicUtils.computeTravelTime(t, link, stepSize);
+			double linkTravelTime = DynamicUtils.computeTravelTime(time, link, stepSize);
 			cost += linkTravelTime;
 			time += linkTravelTime / stepSize;
 			tail = link.head.index;
