@@ -82,13 +82,17 @@ public class CSV extends InputOutput {
 		try (BufferedReader reader = Files.newBufferedReader(Paths.get(nodeFile))) {
 			Network.Node[] nodes = new Network.Node[nodesNum];
 			
+			HashMap<String, Integer> header = new HashMap<>();
+			String[] headerLine = reader.readLine().split(",");
+			for (int i = 0; i < headerLine.length; i++)
+				header.put(headerLine[i], i);
+			
 			reader.lines()
-					.skip(1)
 					.map(line -> line.split(DELIMITER))
 					.forEach(arr -> {
-						int nodeIndex = Integer.parseInt(arr[1]) - 1;
-						double x = Double.parseDouble(arr[3]);
-						double y = Double.parseDouble(arr[4]);
+						int nodeIndex = Integer.parseInt(arr[header.get("node_id")]) - 1;
+						double x = Double.parseDouble(arr[header.get("x_coord")]);
+						double y = Double.parseDouble(arr[header.get("y_coord")]);
 						nodes[nodeIndex] = new Network.Node(nodeIndex, x, y);
 					});
 			
